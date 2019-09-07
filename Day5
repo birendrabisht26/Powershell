@@ -1,0 +1,38 @@
+Enable-PSRemoting -Verbose
+Enter-PSSession -port 5986 -UseSSL -SessionOption $pssession ngsatpc -Credential $crend
+
+$newsession= Enter-PSSession -port 5986 -UseSSL -SessionOption $pssession ngsatpc -Credential $crend
+
+$crend= Get-Credential -UserName administrator
+
+Get-Help Enter-PSSession
+
+Exit-PSSession
+
+
+
+$pssession= New-PSSessionOption -SkipCACheck -SkipCNCheck
+
+
+Enable-psremoting
+
+New-NetFirewallRule -DisplayName "Windows Remote Management (HTTPS-In)" -Name "Windows Remote Management (HTTPS-In)" -Profile Any -LocalPort 5986 -Protocol TCP
+
+$Cert = New-SelfSignedCertificate -CertstoreLocation Cert:\LocalMachine\My -DnsName "srvps"
+
+Export-Certificate  -Cert $Cert -FilePath "C:\Temp"
+
+New-Item -Path WSMan:\LocalHost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $Cert.Thumbprint –Force
+
+Set-Item wsman:\localhost\Client\TrustedHosts -Value 192.168.1.54 -Concatenate -Force
+
+Set-NetConnectionProfile -NetworkCategory Private
+
+
+cd wsman:
+Get-ChildItem
+cd localhost
+Get-ChildItem
+Get-ChildItem .\Listener_809701527
+
+
